@@ -12,12 +12,14 @@ export const STREAMS_CONFIG = {
 export const vaultClient = new Vault.Client({
   ...Vault.networks.testnet,
   rpcUrl: STREAMS_CONFIG.rpcUrl,
+  contractId: STREAMS_CONFIG.vaultId,
   allowHttp: true,
 });
 
 export const controllerClient = new Controller.Client({
   ...Controller.networks.testnet,
   rpcUrl: STREAMS_CONFIG.rpcUrl,
+  contractId: STREAMS_CONFIG.controllerId,
   allowHttp: true,
 });
 

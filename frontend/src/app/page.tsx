@@ -25,13 +25,13 @@ import { connectWallet, getUserPublicKey } from "@/lib/freighter";
 import { vaultClient, controllerClient, signAndSend } from "@/lib/stellar-client";
 import { signTransaction } from "@stellar/freighter-api";
 
-// Utils
-const formatUSDC = (val: bigint | undefined) => {
+// Utils (XLM has 7 decimal places on Stellar)
+const formatXLM = (val: bigint | undefined) => {
   if (val === undefined) return "0.00";
   return (Number(val) / 10_000_000).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
-const toUSDCBigInt = (val: string) => {
+const toXLMBigInt = (val: string) => {
   if (!val || isNaN(Number(val))) return BigInt(0);
   return BigInt(Math.floor(Number(val) * 10_000_000));
 };
@@ -43,13 +43,12 @@ export default function Dashboard() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [amount, setAmount] = useState("");
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
-  const [selectedAsset, setSelectedAsset] = useState({ symbol: "USDC", color: "bg-blue-500", icon: "S" });
+  const [selectedAsset, setSelectedAsset] = useState({ symbol: "XLM", color: "bg-blue-500", icon: "X" });
   const [txLoading, setTxLoading] = useState(false);
 
   const ASSETS = [
-    { symbol: "USDC", color: "bg-blue-500", icon: "S" },
-    { symbol: "XLM", color: "bg-gray-100", icon: "X" },
-    { symbol: "AQUA", color: "bg-teal-400", icon: "A" },
+    { symbol: "XLM", color: "bg-blue-500", icon: "X" },
+    { symbol: "USDC", color: "bg-gray-100", icon: "S" },
   ];
 
   useEffect(() => {
@@ -114,7 +113,7 @@ export default function Dashboard() {
     setTxLoading(true);
     try {
       if (tab === "deposit") {
-        await depositMutation.mutateAsync(toUSDCBigInt(amount));
+        await depositMutation.mutateAsync(toXLMBigInt(amount));
       } else {
         // Withdraw logic
         alert("Withdrawal not yet fully wired to contract shares logic.");
@@ -137,8 +136,8 @@ export default function Dashboard() {
   };
 
   const STRATEGIES = [
-    { id: 1, name: "Blend Protocol USDC", type: "Lending", apy: "6.2%", allocation: "60%", tvl: `$${formatUSDC(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.6) : BigInt(0))}`, tvlColor: "text-blue-400" },
-    { id: 2, name: "Stellar AMM LP", type: "Liquidity", apy: "22.5%", allocation: "40%", tvl: `$${formatUSDC(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.4) : BigInt(0))}`, tvlColor: "text-teal-400" },
+    { id: 1, name: "Blend Protocol XLM", type: "Lending", apy: "6.2%", allocation: "60%", tvl: `$${formatXLM(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.6) : BigInt(0))}`, tvlColor: "text-blue-400" },
+    { id: 2, name: "Stellar AMM LP", type: "Liquidity", apy: "22.5%", allocation: "40%", tvl: `$${formatXLM(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.4) : BigInt(0))}`, tvlColor: "text-teal-400" },
   ];
 
   if (!mounted) return null;
@@ -153,7 +152,7 @@ export default function Dashboard() {
             Live Ecosystem
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white flex items-center gap-4">
-            USDC Liquid Pool
+            XLM Liquid Pool
             <span className="text-sm font-normal py-1 px-3 bg-white/5 border border-white/10 rounded-full text-gray-400">Testnet Live</span>
           </h1>
           <p className="text-gray-400 max-w-2xl text-lg mt-2 font-medium">
@@ -186,8 +185,8 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           label="Total Value Locked" 
-          val={`$${formatUSDC(vaultStats.data?.tvl)}`} 
-          subText={`Testnet USDC`}
+          val={`$${formatXLM(vaultStats.data?.tvl)}`} 
+          subText={`Testnet XLM`}
           icon={<Droplets className="w-5 h-5" />}
           color="blue"
           loading={vaultStats.isLoading}
@@ -202,14 +201,14 @@ export default function Dashboard() {
         />
         <StatCard 
           label="LP Token Price" 
-          val={`${vaultStats.data?.sharePrice} USDC`} 
+          val={`${vaultStats.data?.sharePrice} XLM`} 
           subText="Per share"
           icon={<Coins className="w-5 h-5" />}
           color="purple"
         />
         <StatCard 
           label="Deployed via Controller" 
-          val={`$${formatUSDC(controllerStats.data?.deployed)}`} 
+          val={`$${formatXLM(controllerStats.data?.deployed)}`} 
           subText="Distributed in Strategies"
           icon={<PieChart className="w-5 h-5" />}
           color="indigo"
@@ -239,7 +238,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex flex-col items-end">
                   <span className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Available</span>
-                  <span className="text-white font-bold text-sm">2,500 {selectedAsset.symbol}</span>
+                  <span className="text-white font-bold text-sm">5,000 XLM</span>
                 </div>
               </div>
 
@@ -247,7 +246,7 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between text-xs px-2">
                     <span className="text-gray-400 font-medium">Input Amount</span>
-                    <button onClick={() => setAmount("2500")} className="text-blue-400 hover:text-blue-300 font-bold uppercase tracking-tight">Max</button>
+                    <button onClick={() => setAmount("5000")} className="text-blue-400 hover:text-blue-300 font-bold uppercase tracking-tight">Max</button>
                   </div>
                   <div className="relative group">
                     <input 
