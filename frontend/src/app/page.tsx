@@ -38,13 +38,22 @@ const toUSDCBigInt = (val: string) => {
 
 export default function Dashboard() {
   const queryClient = useQueryClient();
+  const [mounted, setMounted] = useState(false);
   const [wallet, setWallet] = useState<string | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
   const [amount, setAmount] = useState("");
   const [tab, setTab] = useState<"deposit" | "withdraw">("deposit");
+  const [selectedAsset, setSelectedAsset] = useState({ symbol: "USDC", color: "bg-blue-500", icon: "S" });
   const [txLoading, setTxLoading] = useState(false);
 
+  const ASSETS = [
+    { symbol: "USDC", color: "bg-blue-500", icon: "S" },
+    { symbol: "XLM", color: "bg-gray-100", icon: "X" },
+    { symbol: "AQUA", color: "bg-teal-400", icon: "A" },
+  ];
+
   useEffect(() => {
+    setMounted(true);
     async function checkWallet() {
       try {
         const pk = await getUserPublicKey();
@@ -84,9 +93,7 @@ export default function Dashboard() {
       if (!wallet) throw new Error("Wallet not connected");
       const tx = await vaultClient.deposit({ from: wallet, amount: depositAmount });
       
-      const signed = await signTransaction(tx.toXdr(), {
-        network: "TESTNET",
-      });
+      const signed = await signTransaction(tx.toXDR());
       
       // In a real assembly, we'd use sendTransaction, but bindings usually have helper
       // For this implementation, we simulate the success/process
@@ -135,6 +142,8 @@ export default function Dashboard() {
     { id: 1, name: "Blend Protocol USDC", type: "Lending", apy: "6.2%", allocation: "60%", tvl: `$${formatUSDC(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.6) : BigInt(0))}`, tvlColor: "text-blue-400" },
     { id: 2, name: "Stellar AMM LP", type: "Liquidity", apy: "22.5%", allocation: "40%", tvl: `$${formatUSDC(controllerStats.data?.deployed ? BigInt(Number(controllerStats.data.deployed) * 0.4) : BigInt(0))}`, tvlColor: "text-teal-400" },
   ];
+
+  if (!mounted) return null;
 
   return (
     <div className="pt-10 space-y-10">
@@ -231,8 +240,8 @@ export default function Dashboard() {
                   </button>
                 </div>
                 <div className="flex flex-col items-end">
-                  <span className="text-[10px] uppercase font-bold text-gray-500">Available</span>
-                  <span className="text-white font-bold text-sm">2,500 USDC</span>
+                  <span className="text-[10px] uppercase font-bold text-gray-500 tracking-widest">Available</span>
+                  <span className="text-white font-bold text-sm">2,500 {selectedAsset.symbol}</span>
                 </div>
               </div>
 
@@ -250,21 +259,29 @@ export default function Dashboard() {
                       onChange={(e) => setAmount(e.target.value)}
                       className="w-full bg-white/5 border-2 border-white/5 group-hover:border-blue-500/30 focus:border-blue-500 outline-none rounded-2xl px-6 py-5 text-2xl font-bold transition-all text-white placeholder-gray-700"
                     />
-                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
-                      <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center font-bold text-[8px] text-white">S</div>
-                      <span className="text-sm font-bold">USDC</span>
+                    <div className="absolute right-6 top-1/2 -translate-y-1/2 flex items-center gap-2 group/select">
+                      <select 
+                        value={selectedAsset.symbol} 
+                        onChange={(e) => setSelectedAsset(ASSETS.find(a => a.symbol === e.target.value) || ASSETS[0])}
+                        className="appearance-none bg-black/60 hover:bg-black/80 text-white px-4 py-2 rounded-xl border border-white/10 text-sm font-bold cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all pr-8"
+                      >
+                        {ASSETS.map(a => <option key={a.symbol} value={a.symbol} className="bg-[#0a0b0d]">{a.symbol}</option>)}
+                      </select>
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none opacity-50">
+                        <ChevronRight className="w-4 h-4 rotate-90" />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-blue-500/5 rounded-2xl border border-blue-500/10 space-y-3">
                   <div className="flex justify-between text-xs">
-                    <span className="text-gray-400 font-medium">Receive LP Tokens</span>
-                    <span className="text-blue-300 font-bold">~ {amount ? (Number(amount) / 1.12).toFixed(2) : "0.00"}</span>
+                    <span className="text-gray-400 font-medium tracking-tight">Receive LP Tokens</span>
+                    <span className="text-blue-300 font-bold tracking-tighter">~ {amount ? (Number(amount) / 1.12).toFixed(2) : "0.00"}</span>
                   </div>
                   <div className="flex justify-between text-xs border-t border-white/5 pt-3">
-                    <span className="text-gray-400 font-medium">Entry Fee (0.2%)</span>
-                    <span className="text-gray-400">0.00 USDC</span>
+                    <span className="text-gray-400 font-medium tracking-tight">Entry Fee (0.2%)</span>
+                    <span className="text-gray-400">0.00 {selectedAsset.symbol}</span>
                   </div>
                 </div>
               </div>
