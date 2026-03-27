@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050608;
+  --foreground: #ededed;
+}
+
+@theme {
+  --font-outfit: var(--font-outfit);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-outfit), Arial, Helvetica, sans-serif;
+}
+
+/* Custom glass effect */
+.glass {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.glass-blue {
+  background: rgba(59, 130, 246, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+}
+
+.glass-teal {
+  background: rgba(20, 184, 166, 0.03);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(20, 184, 166, 0.1);
+}
+
+/* Transitions */
+.hover-scale {
+  transition: transform 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+}
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Animations */
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 0.25; }
+}
+.pulse-soft {
+  animation: pulse-soft 4s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.float {
+  animation: float 2s ease-in-out infinite;
+}
