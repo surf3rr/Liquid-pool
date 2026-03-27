@@ -29,7 +29,6 @@ export async function signAndSend(assembledTransaction: any) {
   return await assembledTransaction.signAndSend({
     signTransaction: async (xdr: string) => {
       const signedTransaction = await signTransaction(xdr, {
-        network: "TESTNET",
         networkPassphrase: STREAMS_CONFIG.networkPassphrase,
       });
       return signedTransaction;

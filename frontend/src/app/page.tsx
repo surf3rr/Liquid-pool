@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { connectWallet, getUserPublicKey } from "@/lib/freighter";
-import { vaultClient, controllerClient } from "@/lib/stellar-client";
+import { vaultClient, controllerClient, signAndSend } from "@/lib/stellar-client";
 import { signTransaction } from "@stellar/freighter-api";
 
 // Utils
@@ -93,10 +93,8 @@ export default function Dashboard() {
       if (!wallet) throw new Error("Wallet not connected");
       const tx = await vaultClient.deposit({ from: wallet, amount: depositAmount });
       
-      const signed = await signTransaction(tx.toXDR());
+      const signed = await signAndSend(tx);
       
-      // In a real assembly, we'd use sendTransaction, but bindings usually have helper
-      // For this implementation, we simulate the success/process
       return signed;
     },
     onSuccess: () => {
